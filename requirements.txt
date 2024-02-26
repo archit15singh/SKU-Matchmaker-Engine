@@ -6,3 +6,4 @@ numpy
 matplotlib
 seaborn
 wordcloud
+sentence_transformers
