@@ -12,7 +12,7 @@ $(ENV_NAME)/bin/activate: $(REQUIREMENTS)
 	@$(ENV_NAME)/bin/pip install -r $(REQUIREMENTS)
 	@touch $(ENV_NAME)/bin/activate
 
-requirements: $(ENV_NAME)/bin/activate
+req: $(ENV_NAME)/bin/activate
 	@$(ENV_NAME)/bin/pip install -r $(REQUIREMENTS)
 
 clean:
