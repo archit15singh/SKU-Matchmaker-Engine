@@ -45,13 +45,16 @@ def read_data(zip_path):
 @timeit
 def generate_embeddings(product_titles, model_name):
     model = SentenceTransformer(model_name)
-    embeddings = model.encode(product_titles, batch_size=64)
+    embeddings = model.encode(product_titles, batch_size=36)
     return embeddings
 
 
 @timeit
 def cluster_embeddings(embeddings):
-    clusterer = hdbscan.HDBSCAN(min_cluster_size=10, gen_min_span_tree=True)
+    clusterer = hdbscan.HDBSCAN(
+        gen_min_span_tree=True,
+        core_dist_n_jobs=36,
+    )
     cluster_labels = clusterer.fit_predict(embeddings)
     return cluster_labels
 
@@ -68,25 +71,26 @@ def main():
 
     df = sample_balanced_rows(df, "label")
     print(f"Sampled balanced DataFrame shape: {df.shape}")
+    df.to_csv(
+        "/Users/architsingh/Documents/projects/SKU-Matchmaker-Engine/data/all_gs_cleaned.csv",
+        index=False,
+    )
 
     all_titles = pd.concat([df["title_left"], df["title_right"]])
     unique_titles = all_titles.unique()
     print(f"Total unique product titles: {len(unique_titles)}")
 
-    embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v1")
+    embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
     cluster_labels = cluster_embeddings(embeddings)
 
-    # Creating a DataFrame for cluster labels and product titles
     clusters_df = pd.DataFrame(
         {"title": unique_titles, "cluster_label": cluster_labels}
     )
 
-    # Getting the count of items in each cluster
     cluster_counts = clusters_df["cluster_label"].value_counts().reset_index()
     cluster_counts.columns = ["cluster_label", "count"]
     cluster_counts = cluster_counts.sort_values(by="cluster_label")
 
-    # Plotting the clusters with their sizes
     plt.figure(figsize=(12, 8))
     sns.barplot(x="cluster_label", y="count", data=cluster_counts, palette="viridis")
     plt.xlabel("Cluster Label")
@@ -94,17 +98,17 @@ def main():
     plt.title("Number of Items in Each Cluster")
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.show()
+    plt.show(block=False)
 
-    # Print out the cluster details for review
     for label in cluster_counts["cluster_label"]:
-        if label != -1:  # We skip the noise points
+        if label != -1:
             print(f"\nCluster {label}:")
             titles_in_cluster = clusters_df[clusters_df["cluster_label"] == label][
                 "title"
             ].tolist()
             print(f"Number of items: {len(titles_in_cluster)}")
             print("Items:", titles_in_cluster)
+    print()
 
 
 if __name__ == "__main__":
