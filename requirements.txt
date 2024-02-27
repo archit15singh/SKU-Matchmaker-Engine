@@ -8,3 +8,4 @@ seaborn
 wordcloud
 sentence_transformers
 elasticsearch
+hdbscan
