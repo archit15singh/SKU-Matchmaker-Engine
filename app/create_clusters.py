@@ -93,7 +93,13 @@ def main():
     unique_titles = all_titles.unique()
     print(f"Total unique product titles: {len(unique_titles)}")
 
-    embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
+    # embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
+    embeddings = generate_embeddings(unique_titles, "all-MiniLM-L12-v2")
+    # embeddings = generate_embeddings(unique_titles, "all-MiniLM-L6-v2")
+    # embeddings = generate_embeddings(unique_titles, "multi-qa-mpnet-base-dot-v1")
+    # embeddings = generate_embeddings(unique_titles, "all-distilroberta-v1")
+    # embeddings = generate_embeddings(unique_titles, "multi-qa-distilbert-cos-v1")
+    # embeddings = generate_embeddings(unique_titles, "multi-qa-MiniLM-L6-cos-v1")
 
     cluster_labels = cluster_embeddings(embeddings)
 
