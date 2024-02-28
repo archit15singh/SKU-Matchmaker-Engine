@@ -119,11 +119,24 @@ def main():
         print("Items:", titles_in_cluster[:5])
 
     plt.figure(figsize=(12, 8))
-    sns.barplot(x="cluster_label", y="count", data=cluster_counts, palette="viridis")
+    ax = sns.barplot(
+        x="cluster_label", y="count", data=cluster_counts, palette="viridis"
+    )
     plt.xlabel("Cluster Label")
     plt.ylabel("Number of Items")
     plt.title("Number of Items in Each Cluster")
     plt.xticks(rotation=45)
+
+    for p in ax.patches:
+        ax.annotate(
+            f"{int(p.get_height())}",
+            (p.get_x() + p.get_width() / 2.0, p.get_height()),
+            ha="center",
+            va="center",
+            xytext=(0, 10),
+            textcoords="offset points",
+        )
+
     plt.tight_layout()
     plt.show()
 
