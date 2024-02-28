@@ -5,6 +5,7 @@ import hdbscan
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import silhouette_score
+import numpy as np
 
 
 def timeit(func):
@@ -52,9 +53,15 @@ def generate_embeddings(product_titles, model_name):
 
 
 @timeit
-def cluster_embeddings(embeddings, min_cluster_size):
+def cluster_embeddings(
+    embeddings, min_cluster_size, min_samples=None, cluster_selection_epsilon=None
+):
     clusterer = hdbscan.HDBSCAN(
         min_cluster_size=min_cluster_size,
+        min_samples=min_samples if min_samples is not None else None,
+        cluster_selection_epsilon=(
+            cluster_selection_epsilon if cluster_selection_epsilon is not None else 0
+        ),
         gen_min_span_tree=True,
         core_dist_n_jobs=36,
     )
@@ -62,6 +69,44 @@ def cluster_embeddings(embeddings, min_cluster_size):
     return cluster_labels
 
 
+@timeit
+def tune_hdbscan_parameters(embeddings):
+    min_cluster_sizes = list(range(5, 50, 5))
+    min_samples_list = [None] + list(range(5, 50, 5))
+    cluster_selection_epsilons = [0.0, 0.1, 0.5, 1.0]
+
+    best_score = -1
+    best_params = {}
+
+    for min_cluster_size in min_cluster_sizes:
+        for min_samples in min_samples_list:
+            for cluster_selection_epsilon in cluster_selection_epsilons:
+                cluster_labels = cluster_embeddings(
+                    embeddings,
+                    min_cluster_size=min_cluster_size,
+                    min_samples=min_samples,
+                    cluster_selection_epsilon=cluster_selection_epsilon,
+                )
+                # Only calculate silhouette score if more than one cluster (excluding noise) is found
+                if len(set(cluster_labels)) > 1 and not (
+                    list(cluster_labels).count(-1) == len(cluster_labels)
+                ):
+                    score = silhouette_score(embeddings, cluster_labels)
+                    if score > best_score:
+                        best_score = score
+                        best_params = {
+                            "min_cluster_size": min_cluster_size,
+                            "min_samples": min_samples,
+                            "cluster_selection_epsilon": cluster_selection_epsilon,
+                        }
+                print(
+                    f"Params: {min_cluster_size}, {min_samples}, {cluster_selection_epsilon} - Score: {score}"
+                )
+
+    return best_params, best_score
+
+
+@timeit
 def calculate_silhouette_score(embeddings, cluster_labels):
     filtered_embeddings = embeddings[cluster_labels != -1]
     filtered_labels = cluster_labels[cluster_labels != -1]
@@ -96,33 +141,18 @@ def main():
 
     embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
 
-    ########################################################################################################################
-    # min_cluster_sizes = list(range(5, 505, 5))
+    # Tune HDBSCAN parameters
+    best_params, best_score = tune_hdbscan_parameters(embeddings)
+    print(f"Best Parameters: {best_params}, Best Silhouette Score: {best_score}")
 
-    # best_score = -1
-    # best_size = None
-
-    # for size in min_cluster_sizes:
-    #     cluster_labels = cluster_embeddings(
-    #         embeddings=embeddings,
-    #         min_cluster_size=size,
-    #     )
-    #     score = calculate_silhouette_score(embeddings, cluster_labels)
-    #     print(f"min_cluster_size: {size} with Silhouette Score: {score}")
-
-    #     if score and score > best_score:
-    #         best_score = score
-    #         best_size = size
-    #         print(
-    #             f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}"
-    #         )
-    ########################################################################################################################
-
-    best_size = 45
+    # Cluster with the best parameters
     cluster_labels = cluster_embeddings(
-        embeddings=embeddings,
-        min_cluster_size=best_size,
+        embeddings,
+        min_cluster_size=best_params["min_cluster_size"],
+        min_samples=best_params.get("min_samples"),
+        cluster_selection_epsilon=best_params.get("cluster_selection_epsilon"),
     )
+
     silhouette_score = calculate_silhouette_score(embeddings, cluster_labels)
     if silhouette_score is not None:
         print(f"Silhouette Score: {silhouette_score}")
