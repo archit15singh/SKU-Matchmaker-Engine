@@ -87,7 +87,6 @@ def tune_hdbscan_parameters(embeddings):
                     min_samples=min_samples,
                     cluster_selection_epsilon=cluster_selection_epsilon,
                 )
-                # Only calculate silhouette score if more than one cluster (excluding noise) is found
                 if len(set(cluster_labels)) > 1 and not (
                     list(cluster_labels).count(-1) == len(cluster_labels)
                 ):
