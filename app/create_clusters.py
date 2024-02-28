@@ -1,9 +1,10 @@
 import pandas as pd
 import time
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer
 import hdbscan
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import silhouette_score
 
 
 def timeit(func):
@@ -59,6 +60,17 @@ def cluster_embeddings(embeddings):
     return cluster_labels
 
 
+def calculate_silhouette_score(embeddings, cluster_labels):
+    filtered_embeddings = embeddings[cluster_labels != -1]
+    filtered_labels = cluster_labels[cluster_labels != -1]
+
+    if len(set(filtered_labels)) > 1:
+        score = silhouette_score(filtered_embeddings, filtered_labels)
+        return score
+    else:
+        return None
+
+
 @timeit
 def main():
     zip_path = "/Users/architsingh/Documents/projects/SKU-Matchmaker-Engine/data/all_gs.json.gz"
@@ -82,6 +94,12 @@ def main():
 
     embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
     cluster_labels = cluster_embeddings(embeddings)
+
+    silhouette_score = calculate_silhouette_score(embeddings, cluster_labels)
+    if silhouette_score is not None:
+        print(f"Silhouette Score: {silhouette_score}")
+    else:
+        print("Silhouette Score could not be calculated due to insufficient clusters.")
 
     clusters_df = pd.DataFrame(
         {"title": unique_titles, "cluster_label": cluster_labels}
