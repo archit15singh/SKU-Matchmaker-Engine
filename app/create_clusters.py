@@ -109,15 +109,6 @@ def main():
     cluster_counts.columns = ["cluster_label", "count"]
     cluster_counts = cluster_counts.sort_values(by="cluster_label")
 
-    plt.figure(figsize=(12, 8))
-    sns.barplot(x="cluster_label", y="count", data=cluster_counts, palette="viridis")
-    plt.xlabel("Cluster Label")
-    plt.ylabel("Number of Items")
-    plt.title("Number of Items in Each Cluster")
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show(block=False)
-
     for label in cluster_counts["cluster_label"]:
         if label != -1:
             print(f"\nCluster {label}:")
@@ -126,6 +117,16 @@ def main():
             ].tolist()
             print(f"Number of items: {len(titles_in_cluster)}")
             print("Items:", titles_in_cluster)
+
+    plt.figure(figsize=(12, 8))
+    sns.barplot(x="cluster_label", y="count", data=cluster_counts, palette="viridis")
+    plt.xlabel("Cluster Label")
+    plt.ylabel("Number of Items")
+    plt.title("Number of Items in Each Cluster")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
     print()
 
 
