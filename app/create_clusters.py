@@ -108,12 +108,14 @@ def main():
             min_cluster_size=size,
         )
         score = calculate_silhouette_score(embeddings, cluster_labels)
+        print(f"min_cluster_size: {size} with Silhouette Score: {score}")
 
         if score and score > best_score:
             best_score = score
             best_size = size
-
-    print(f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}")
+            print(
+                f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}"
+            )
     ########################################################################################################################
 
     best_size = 25
