@@ -25,6 +25,7 @@ def clean_columns(df, columns):
         df[column] = df[column].str.replace("null", "", case=False, regex=False)
         df[column] = df[column].str.replace(special_chars_pattern, "", regex=True)
         df[column] = df[column].str.strip()
+        df[column] = df[column].str.lower()
 
     return df
 
@@ -115,7 +116,7 @@ def main():
             "title"
         ].tolist()
         print(f"Number of items: {len(titles_in_cluster)}")
-        print("Items:", titles_in_cluster)
+        print("Items:", titles_in_cluster[:5])
 
     plt.figure(figsize=(12, 8))
     sns.barplot(x="cluster_label", y="count", data=cluster_counts, palette="viridis")
