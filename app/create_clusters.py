@@ -52,8 +52,9 @@ def generate_embeddings(product_titles, model_name):
 
 
 @timeit
-def cluster_embeddings(embeddings):
+def cluster_embeddings(embeddings, min_cluster_size):
     clusterer = hdbscan.HDBSCAN(
+        min_cluster_size=min_cluster_size,
         gen_min_span_tree=True,
         core_dist_n_jobs=36,
     )
@@ -94,8 +95,32 @@ def main():
     print(f"Total unique product titles: {len(unique_titles)}")
 
     embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
-    cluster_labels = cluster_embeddings(embeddings)
 
+    ########################################################################################################################
+    min_cluster_sizes = list(range(5, 505, 5))
+
+    best_score = -1
+    best_size = None
+
+    for size in min_cluster_sizes:
+        cluster_labels = cluster_embeddings(
+            embeddings=embeddings,
+            min_cluster_size=size,
+        )
+        score = calculate_silhouette_score(embeddings, cluster_labels)
+
+        if score and score > best_score:
+            best_score = score
+            best_size = size
+
+    print(f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}")
+    ########################################################################################################################
+
+    best_size = 25
+    cluster_labels = cluster_embeddings(
+        embeddings=embeddings,
+        min_cluster_size=best_size,
+    )
     silhouette_score = calculate_silhouette_score(embeddings, cluster_labels)
     if silhouette_score is not None:
         print(f"Silhouette Score: {silhouette_score}")
@@ -138,7 +163,7 @@ def main():
         )
 
     plt.tight_layout()
-    plt.show()
+    plt.show(block=False)
 
     print()
 
