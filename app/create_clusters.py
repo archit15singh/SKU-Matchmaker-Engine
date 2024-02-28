@@ -97,28 +97,28 @@ def main():
     embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
 
     ########################################################################################################################
-    min_cluster_sizes = list(range(5, 505, 5))
+    # min_cluster_sizes = list(range(5, 505, 5))
 
-    best_score = -1
-    best_size = None
+    # best_score = -1
+    # best_size = None
 
-    for size in min_cluster_sizes:
-        cluster_labels = cluster_embeddings(
-            embeddings=embeddings,
-            min_cluster_size=size,
-        )
-        score = calculate_silhouette_score(embeddings, cluster_labels)
-        print(f"min_cluster_size: {size} with Silhouette Score: {score}")
+    # for size in min_cluster_sizes:
+    #     cluster_labels = cluster_embeddings(
+    #         embeddings=embeddings,
+    #         min_cluster_size=size,
+    #     )
+    #     score = calculate_silhouette_score(embeddings, cluster_labels)
+    #     print(f"min_cluster_size: {size} with Silhouette Score: {score}")
 
-        if score and score > best_score:
-            best_score = score
-            best_size = size
-            print(
-                f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}"
-            )
+    #     if score and score > best_score:
+    #         best_score = score
+    #         best_size = size
+    #         print(
+    #             f"Best min_cluster_size: {best_size} with Silhouette Score: {best_score}"
+    #         )
     ########################################################################################################################
 
-    best_size = 25
+    best_size = 45
     cluster_labels = cluster_embeddings(
         embeddings=embeddings,
         min_cluster_size=best_size,
