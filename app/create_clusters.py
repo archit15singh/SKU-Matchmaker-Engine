@@ -93,65 +93,73 @@ def main():
     unique_titles = all_titles.unique()
     print(f"Total unique product titles: {len(unique_titles)}")
 
-    # embeddings = generate_embeddings(unique_titles, "all-mpnet-base-v2")
-    embeddings = generate_embeddings(unique_titles, "all-MiniLM-L12-v2")
-    # embeddings = generate_embeddings(unique_titles, "all-MiniLM-L6-v2")
-    # embeddings = generate_embeddings(unique_titles, "multi-qa-mpnet-base-dot-v1")
-    # embeddings = generate_embeddings(unique_titles, "all-distilroberta-v1")
-    # embeddings = generate_embeddings(unique_titles, "multi-qa-distilbert-cos-v1")
-    # embeddings = generate_embeddings(unique_titles, "multi-qa-MiniLM-L6-cos-v1")
+    models = [
+        "all-mpnet-base-v2",
+        "all-MiniLM-L12-v2",
+        "all-MiniLM-L6-v2",
+        "multi-qa-mpnet-base-dot-v1",
+        "all-distilroberta-v1",
+        "multi-qa-distilbert-cos-v1",
+        "multi-qa-MiniLM-L6-cos-v1",
+        "stsb-roberta-large",
+    ]
 
-    cluster_labels = cluster_embeddings(embeddings)
+    for model in models:
+        embeddings = generate_embeddings(unique_titles, model)
 
-    silhouette_score = calculate_silhouette_score(embeddings, cluster_labels)
-    if silhouette_score is not None:
-        print(f"Silhouette Score: {silhouette_score}")
-    else:
-        print("Silhouette Score could not be calculated due to insufficient clusters.")
+        cluster_labels = cluster_embeddings(embeddings)
 
-    clusters_df = pd.DataFrame(
-        {"title": unique_titles, "cluster_label": cluster_labels}
-    )
-
-    cluster_counts = clusters_df["cluster_label"].value_counts().reset_index()
-    cluster_counts.columns = ["cluster_label", "count"]
-    cluster_counts = cluster_counts.sort_values(by="cluster_label")
-
-    for label in cluster_counts["cluster_label"]:
-        print(f"\nCluster {label}:")
-        titles_in_cluster = clusters_df[clusters_df["cluster_label"] == label][
-            "title"
-        ].tolist()
-        print(f"Number of items: {len(titles_in_cluster)}")
-        print(label)
-        if label == -1:
-            print("Items:", titles_in_cluster[:1])
+        silhouette_score = calculate_silhouette_score(embeddings, cluster_labels)
+        if silhouette_score is not None:
+            print(f"Silhouette Score: {silhouette_score} using model: {model}")
         else:
-            print("Items:", titles_in_cluster[:1])
+            print(
+                "Silhouette Score could not be calculated due to insufficient clusters."
+            )
 
-    plt.figure(figsize=(12, 8))
-    ax = sns.barplot(
-        x="cluster_label", y="count", data=cluster_counts, palette="viridis"
-    )
-    plt.xlabel("Cluster Label")
-    plt.ylabel("Number of Items")
-    plt.title("Number of Items in Each Cluster")
-    plt.xticks(rotation=45)
+    # clusters_df = pd.DataFrame(
+    #     {"title": unique_titles, "cluster_label": cluster_labels}
+    # )
 
-    for p in ax.patches:
-        ax.annotate(
-            f"{int(p.get_height())}",
-            (p.get_x() + p.get_width() / 2.0, p.get_height()),
-            ha="center",
-            va="center",
-            xytext=(0, 10),
-            textcoords="offset points",
-        )
+    # cluster_counts = clusters_df["cluster_label"].value_counts().reset_index()
+    # cluster_counts.columns = ["cluster_label", "count"]
+    # cluster_counts = cluster_counts.sort_values(by="cluster_label")
 
-    plt.tight_layout()
-    plt.show()
+    # for label in cluster_counts["cluster_label"]:
+    #     print(f"\nCluster {label}:")
+    #     titles_in_cluster = clusters_df[clusters_df["cluster_label"] == label][
+    #         "title"
+    #     ].tolist()
+    #     print(f"Number of items: {len(titles_in_cluster)}")
+    #     print(label)
+    #     if label == -1:
+    #         print("Items:", titles_in_cluster[:1])
+    #     else:
+    #         print("Items:", titles_in_cluster[:1])
 
-    print()
+    # plt.figure(figsize=(12, 8))
+    # ax = sns.barplot(
+    #     x="cluster_label", y="count", data=cluster_counts, palette="viridis"
+    # )
+    # plt.xlabel("Cluster Label")
+    # plt.ylabel("Number of Items")
+    # plt.title("Number of Items in Each Cluster")
+    # plt.xticks(rotation=45)
+
+    # for p in ax.patches:
+    #     ax.annotate(
+    #         f"{int(p.get_height())}",
+    #         (p.get_x() + p.get_width() / 2.0, p.get_height()),
+    #         ha="center",
+    #         va="center",
+    #         xytext=(0, 10),
+    #         textcoords="offset points",
+    #     )
+
+    # plt.tight_layout()
+    # plt.show()
+
+    # print()
 
 
 if __name__ == "__main__":

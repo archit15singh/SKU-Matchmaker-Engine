@@ -9,3 +9,4 @@ wordcloud
 sentence_transformers
 elasticsearch
 hdbscan
+ray
